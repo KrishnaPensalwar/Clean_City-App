@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="afterDescendants"
+    android:fadingEdge="vertical"
+    tools:context=".Home">
+
+    <FrameLayout
+        android:id="@+id/framelayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/bottomLinearLayout" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_name"
+        android:textSize="24sp"
+        android:background="#5DE679"
+        android:textColor="#000000"
+        android:gravity="center_horizontal"
+        android:padding="15dp"/>
+
+    <ImageView
+        android:id="@+id/profilephoto"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="35dp"
+        android:layout_marginTop="100dp"
+        android:src="@drawable/profile" />
+
+
+    <TextView
+        android:id="@+id/textview_home"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="30dp"
+        android:layout_marginTop="120dp"
+        android:layout_toRightOf="@id/profilephoto"
+        android:text="Name : "
+        android:textColor="@color/black"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="120dp"
+        android:layout_toRightOf="@+id/textview_home"
+        android:textColor="@color/black"
+        android:textSize="20dp" />
+
+    <TextView
+        android:id="@+id/rewardpoints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textview_home"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="10dp"
+        android:layout_toEndOf="@id/profilephoto"
+        android:text="Reward Points :"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/rewards"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/name"
+        android:layout_marginLeft="12dp"
+        android:layout_marginTop="8dp"
+        android:layout_toEndOf="@+id/rewardpoints"
+        android:textColor="@color/black"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/youarehere"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="You Are Here 📌"
+        android:textSize="20sp"
+        android:textColor="@color/black"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/rewardpoints"
+        android:layout_marginTop="30dp"/>
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapview"
+        android:layout_width="match_parent"
+        android:layout_height="370dp"
+        android:layout_below="@id/youarehere"
+        android:layout_margin="20dp"
+        android:layout_marginTop="25dp" />
+
+
+    <LinearLayout
+        android:id="@+id/bottomLinearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/Home_btn"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/home"
+            android:backgroundTint="@null"
+            android:foregroundGravity="left">
+
+        </ImageButton>
+
+        <ImageButton
+            android:id="@+id/Upload_btn"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="70dp"
+            android:background="@drawable/upload"
+            android:backgroundTint="@null">
+
+
+        </ImageButton>
+
+        <ImageButton
+            android:id="@+id/History_btn"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="70dp"
+            android:background="@drawable/history">
+
+        </ImageButton>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

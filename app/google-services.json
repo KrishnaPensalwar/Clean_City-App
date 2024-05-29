@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "232589557296",
+    "project_id": "garbage-collection-c0380",
+    "storage_bucket": "garbage-collection-c0380.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232589557296:android:4596bcc587e909dafd77f5",
+        "android_client_info": {
+          "package_name": "com.example.garbagecollection"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAUb8nnClRrQ0ggitS2W76eejhIaNHSZQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:232589557296:android:0e66cf43a16e9cfffd77f5",
+        "android_client_info": {
+          "package_name": "com.garbage_collection123"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAUb8nnClRrQ0ggitS2W76eejhIaNHSZQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
