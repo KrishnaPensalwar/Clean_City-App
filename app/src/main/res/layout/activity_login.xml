@@ -1,23 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/img_1"
-    tools:context=".login">
+    tools:context=".Login">
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="350dp"
-        android:layout_height="wrap_content"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_centerHorizontal="true"
         android:layout_margin="25dp"
         android:src="@drawable/logo"
         tools:layout_editor_absoluteX="5dp"
         tools:layout_editor_absoluteY="68dp" />
 
     <EditText
-        android:id="@+id/editTextText4"
+        android:id="@+id/login_page_email"
         android:layout_width="match_parent"
         android:background="@drawable/edittext_background"
         android:drawableStart="@drawable/baseline_mail_outline_24"
@@ -31,20 +32,21 @@
         android:textColorHint="@color/white"
         android:layout_marginEnd="30dp"
         android:textColor="@color/white"
-        android:hint="Enter Email" />
+        android:hint="Enter Email"
+        />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="#FF7276"
         android:id="@+id/errorusername"
-        android:layout_below="@id/editTextText4"
+        android:layout_below="@id/login_page_email"
         android:layout_marginStart="30dp"
         android:layout_marginBottom="20dp"/>
 
 
     <EditText
-        android:id="@+id/editTextText5"
+        android:id="@+id/login_page_password"
         android:textColor="@color/white"
         android:background="@drawable/edittext_background"
         android:layout_width="match_parent"
@@ -57,6 +59,7 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="30dp"
+        android:inputType="textPassword"
         android:hint="Enter Password" />
 
 
@@ -65,7 +68,7 @@
         android:layout_height="wrap_content"
         android:textColor="#FF7276"
         android:id="@+id/errorpassword"
-        android:layout_below="@id/editTextText5"
+        android:layout_below="@id/login_page_password"
         android:layout_marginStart="30dp"
         android:layout_marginBottom="20dp"/>
 
@@ -76,20 +79,20 @@
         android:textColor="@color/white"
         android:id="@+id/forgotpassword"
         android:layout_alignParentRight="true"
-        android:layout_below="@+id/editTextText5"
+        android:layout_below="@+id/login_page_password"
         android:layout_marginTop="20dp"
         android:clickable="true">
 
     </TextView>
 
     <Button
-        android:id="@+id/button3"
+        android:id="@+id/button_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Login"
         android:layout_margin="50dp"
         android:hint="Enter Password"
-        android:layout_below="@id/editTextText5"
+        android:layout_below="@id/login_page_password"
         android:layout_centerInParent="true"/>
 
     <TextView
@@ -100,16 +103,17 @@
         android:text="Don't Have an Account?"
         android:layout_marginLeft="30dp"
         android:textSize="20dp"
-        android:layout_below="@id/button3"/>
+        android:layout_below="@id/button_login"/>
 
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/button_register"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button3"
+        android:layout_below="@+id/button_login"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="-10dp"
         android:layout_toRightOf="@+id/textview"
         android:text="Create Account" />
+
 
 </RelativeLayout>

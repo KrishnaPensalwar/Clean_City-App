@@ -11,7 +11,10 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -27,12 +30,13 @@ private lateinit var Home_btn: ImageButton
 private lateinit var Upload_btn: ImageButton
 private lateinit var History_btn : ImageButton
 private lateinit var name:TextView
-private lateinit var rewards:TextView
 private lateinit var fusedLocationClient: FusedLocationProviderClient
 private lateinit var mapView: MapView
 private lateinit var myLocationOverlay: MyLocationNewOverlay
-private lateinit var database:DatabaseReference
-private lateinit var loginclass:login
+private lateinit var firebaseAuth:FirebaseAuth
+private lateinit var firebaseFirestore:FirebaseFirestore
+private lateinit var reward:TextView
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,18 +67,33 @@ private lateinit var loginclass:login
 
 
 
-//        val db:DbHandler = DbHandler(this)
-//        val noteList:ArrayList<User> = db.getallusers()
 
-//        for (i in noteList.indices) {
-//            Log.d("USER_INFO", "Id: ${noteList[i].id} ,Name: ${noteList[i].nama} , Mobile :${noteList[i].mobile}")
-//        }
+        name = findViewById(R.id.name)
+        reward = findViewById(R.id.rewards)
+        firebaseAuth = FirebaseAuth.getInstance()
+        firebaseFirestore = FirebaseFirestore.getInstance()
 
+        val userid = firebaseAuth.currentUser?.uid
 
-        val username=name.text.toString()
-        rewards=findViewById(R.id.rewards)
-//        val showname=db.getusername()
-//        val showrewards=db.getrewards()
+        val documentref: DocumentReference
+        documentref = userid?.let { firebaseFirestore.collection("users").document(it) }!!
+        documentref.get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    // Convert document snapshot to a custom data class if needed
+                    name.text = document.getString("Name")
+                    val points = document.getDouble("Reward_Points")
+                    reward.text = points.toString()
+                } else {
+                    // Document doesn't exist
+                    name.text = "Error in retrieving name"
+                    reward.text = "Error in retrieving reward points"
+                }
+            }
+            .addOnFailureListener { exception ->
+                // Handle errors
+                Toast.makeText(this, exception.toString(), Toast.LENGTH_SHORT).show()
+            }
 
 
 

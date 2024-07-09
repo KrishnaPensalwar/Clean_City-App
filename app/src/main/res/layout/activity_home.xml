@@ -30,7 +30,7 @@
         android:layout_height="100dp"
         android:layout_marginLeft="35dp"
         android:layout_marginTop="100dp"
-        android:src="@drawable/profile" />
+        android:src="@drawable/baseline_person_24" />
 
 
     <TextView
@@ -97,45 +97,46 @@
         android:layout_marginTop="25dp" />
 
 
-    <LinearLayout
-        android:id="@+id/bottomLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/Home_btn"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="@drawable/home"
-            android:backgroundTint="@null"
-            android:foregroundGravity="left">
-
-        </ImageButton>
-
-        <ImageButton
-            android:id="@+id/Upload_btn"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginStart="70dp"
-            android:background="@drawable/upload"
-            android:backgroundTint="@null">
 
 
-        </ImageButton>
+        <LinearLayout
+            android:id="@+id/bottomLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/History_btn"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:layout_marginStart="70dp"
-            android:background="@drawable/history">
+            <ImageButton
+                android:id="@+id/Home_btn"
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/home"
+                android:backgroundTint="@null"
+                android:foregroundGravity="left">
 
-        </ImageButton>
+            </ImageButton>
+
+            <ImageButton
+                android:id="@+id/Upload_btn"
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="70dp"
+                android:background="@drawable/upload"
+                android:backgroundTint="@null">
 
 
-    </LinearLayout>
+            </ImageButton>
 
+            <ImageButton
+                android:id="@+id/History_btn"
+                android:layout_width="80dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="70dp"
+                android:background="@drawable/history">
+
+            </ImageButton>
+
+
+        </LinearLayout>
 </RelativeLayout>
