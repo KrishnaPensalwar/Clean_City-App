@@ -107,7 +107,7 @@ class Upload : AppCompatActivity() {
             if (imageBytes != null) {
                 uploadimage(imageBytes!!)
 //                sendemail()
-                addRewardPoints()
+//                addRewardPoints()
             } else {
                 Toast.makeText(this, "No image captured", Toast.LENGTH_SHORT).show()
             }
@@ -198,6 +198,7 @@ class Upload : AppCompatActivity() {
                 queryMap["Latitude"] = latitude
                 queryMap["Longitude"] = longitude
                 queryMap["Description"] = des
+                queryMap["Status"] = "Pending"
 
 
 
@@ -224,28 +225,7 @@ class Upload : AppCompatActivity() {
         }
     }
 
-    fun addRewardPoints() {
-        // Get a reference to the Firestore database
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        val pointsToAdd :Long= 5
-        val firestore = FirebaseFirestore.getInstance()
 
-        // Reference to the user's document
-        val userDocRef: DocumentReference? = userId?.let { firestore.collection("users").document(it) }
-
-        // Update the 'rewardPoints' field by incrementing it by the specified points
-        if (userDocRef != null) {
-            userDocRef.update("Reward_Points", FieldValue.increment(pointsToAdd))
-                .addOnSuccessListener {
-                    // Handle success
-                    Log.d("AddRewardPoints", "Reward points successfully updated!")
-                }
-                .addOnFailureListener { e ->
-                    // Handle failure
-                    Log.w("AddRewardPoints", "Error updating reward points", e)
-                }
-        }
-    }
 
 
 }

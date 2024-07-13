@@ -73,7 +73,7 @@ class History : AppCompatActivity() {
                         val longitude = document.getDouble("Longitude") ?: 0.0
                         val description = document.getString("Description") ?: ""
                         val status = document.getString("Status") ?:""
-                        val imageData = ImageData(uri, latitude, longitude, description)
+                        val imageData = ImageData(uri, latitude, longitude, description,status)
                         imagesList.add(imageData)
                     }
                     imageAdapter.notifyDataSetChanged()

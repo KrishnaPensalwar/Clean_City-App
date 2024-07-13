@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
@@ -93,6 +94,7 @@ private lateinit var reward:TextView
             .addOnFailureListener { exception ->
                 // Handle errors
                 Toast.makeText(this, exception.toString(), Toast.LENGTH_SHORT).show()
+                Log.d("Error", exception.toString())
             }
 
 

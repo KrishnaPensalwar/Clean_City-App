@@ -63,11 +63,7 @@ class Login : AppCompatActivity() {
         val pass = password_login.text.toString()
         firebaseAuth = FirebaseAuth.getInstance()
 
-        if(mail == "admin123@gmail.com" && pass.equals("Admin1234")){
-            val intent = Intent(this,Admin_Activity::class.java)
-            startActivity(intent)
-            finish()
-        }
+
 
         if (mail.equals("")) {
             Toast.makeText(this, "Please Enter email id", Toast.LENGTH_SHORT).show()
@@ -76,6 +72,12 @@ class Login : AppCompatActivity() {
             Toast.makeText(this, "Please Enter password", Toast.LENGTH_SHORT).show()
             password_login.error = "Please Enter password"
         } else {
+            if(mail == "admin123@gmail.com" && pass.equals("Admin1234")){
+                val intent = Intent(this,Admin::class.java)
+                startActivity(intent)
+                finish()
+            }
+
             firebaseAuth.signInWithEmailAndPassword(mail, pass).addOnCompleteListener {
 
                 if (it.isSuccessful) {
