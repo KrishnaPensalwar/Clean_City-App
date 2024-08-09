@@ -3,18 +3,13 @@ package com.example.garbagecollection
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
 class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
+
     private lateinit var recycler: RecyclerView
     private lateinit var queryList: MutableList<Data>
     private lateinit var queryAdapter: QueryAdapter
@@ -27,7 +22,7 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
         recycler = findViewById(R.id.recyclerView)
         recycler.layoutManager = LinearLayoutManager(this)
         queryList = mutableListOf()
-        queryAdapter = QueryAdapter(queryList)
+        queryAdapter = QueryAdapter(queryList, this) // Pass 'this' for click listener
         recycler.adapter = queryAdapter
 
         firestore = FirebaseFirestore.getInstance()
@@ -49,7 +44,7 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
                     val uri = "data:image/jpeg;base64," + android.util.Base64.encodeToString(uriBytes, android.util.Base64.DEFAULT)
                     val userId = document.getString("userid") ?: ""
                     val status = document.getString("Status") ?: ""
-                    val query = Data(uri, userId, status)
+                    val query = Data(uri, userId, status, document.id) // Include document ID
                     queryList.add(query)
                 }
                 queryAdapter.notifyDataSetChanged()
@@ -61,26 +56,45 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
     }
 
     override fun onApproveClick(query: Data) {
-        // Update Firestore document status
-        val userDocRef = firestore.collection("users").document(query.userid)
-        val imagesCollectionRef = userDocRef.collection("images")
+        // Change the status of the Firestore document to "Approved"
+        val queryDocRef = firestore.collection("queries").document(query.documentId)
 
-        imagesCollectionRef
-            // Assuming documentId is stored in Query or fetched earlier
-            .whereEqualTo("Status", "Approved")
-            .get()
+        queryDocRef.update("Status", "Approved")
             .addOnSuccessListener {
-                Log.d("Admin_Activity", "Status updated successfully")
+                Log.d("Admin_Activity", "Document status successfully updated to 'Approved'!")
+
+                // Optionally, you can also add reward points here
+                // addRewardPoints(query.userid)
 
                 // Remove item from RecyclerView
                 queryList.remove(query)
                 queryAdapter.notifyDataSetChanged()
+                Toast.makeText(this, "Item approved", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { e ->
-                Log.e("Admin_Activity", "Error updating status", e)
+                Log.e("Admin_Activity", "Error updating document status", e)
+                Toast.makeText(this, "Failed to approve item", Toast.LENGTH_SHORT).show()
             }
     }
 
+    // Optionally, you can add this function to handle declined items
+    fun onDeclineClick(query: Data) {
+        // Change the status of the Firestore document to "Declined"
+        val queryDocRef = firestore.collection("queries").document(query.documentId)
 
+        queryDocRef.update("Status", "Declined")
+            .addOnSuccessListener {
+                Log.d("Admin_Activity", "Document status successfully updated to 'Declined'!")
+
+                // Remove item from RecyclerView
+                queryList.remove(query)
+                queryAdapter.notifyDataSetChanged()
+                Toast.makeText(this, "Item declined", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Log.e("Admin_Activity", "Error updating document status", e)
+                Toast.makeText(this, "Failed to decline item", Toast.LENGTH_SHORT).show()
+            }
+    }
 
 }
