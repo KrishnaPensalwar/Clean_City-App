@@ -19,8 +19,6 @@ import androidx.core.content.ContextCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
 
@@ -42,7 +40,7 @@ class Upload : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
 
-        if(ContextCompat.checkSelfPermission(
+        if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.CAMERA
             ) != PackageManager.PERMISSION_GRANTED
@@ -78,36 +76,47 @@ class Upload : AppCompatActivity() {
 
         Click.isEnabled = false
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.CAMERA), 111)
         } else {
             Click.isEnabled = true
         }
 
         Click.setOnClickListener {
-            getpermission()
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             if (intent.resolveActivity(packageManager) != null) {
                 startActivityForResult(intent, IMAGE_REQUEST)
+            } else {
+                Toast.makeText(this, "No camera application found.", Toast.LENGTH_SHORT).show()
             }
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION), 100)
-            return
+            ActivityCompat.requestPermissions(
+                this, arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ), 100
+            )
         }
 
         uploadphoto.setOnClickListener {
             if (imageBytes != null) {
-                uploadimage(imageBytes!!)
-//                sendemail()
-//                addRewardPoints()
+                uploadImage(imageBytes!!)
             } else {
                 Toast.makeText(this, "No image captured", Toast.LENGTH_SHORT).show()
             }
@@ -118,27 +127,31 @@ class Upload : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == IMAGE_REQUEST && resultCode == Activity.RESULT_OK) {
             val extras = data?.extras
-            val bitmap = extras?.get("data") as Bitmap
+            val bitmap = extras?.get("data") as? Bitmap
 
-            viewImage.setImageBitmap(bitmap)
+            if (bitmap != null) {
+                viewImage.setImageBitmap(bitmap)
 
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
-            imageBytes = byteArrayOutputStream.toByteArray()
+                val byteArrayOutputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+                imageBytes = byteArrayOutputStream.toByteArray()
+            } else {
+                Toast.makeText(this, "Failed to capture image", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-    private fun getpermission() {
-        val permissionlist = mutableListOf<String>()
-        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) permissionlist.add(Manifest.permission.CAMERA)
-        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) permissionlist.add(Manifest.permission.READ_EXTERNAL_STORAGE)
-        if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) permissionlist.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    }
-
     private fun fetchLocation(callback: (Pair<Double, Double>) -> Unit) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
+            Toast.makeText(this, "Location permissions are required", Toast.LENGTH_SHORT).show()
             callback(Pair(0.0, 0.0))
             return
         }
@@ -148,8 +161,6 @@ class Upload : AppCompatActivity() {
                 if (location != null) {
                     val latitude = location.latitude
                     val longitude = location.longitude
-
-//                    Toast.makeText(this, "Latitude: $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
                     callback(Pair(latitude, longitude))
                 } else {
                     Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
@@ -162,7 +173,7 @@ class Upload : AppCompatActivity() {
             }
     }
 
-    private fun uploadimage(imageBytes: ByteArray) {
+    private fun uploadImage(imageBytes: ByteArray) {
         val userid = FirebaseAuth.getInstance().currentUser?.uid
 
         if (userid != null) {
@@ -170,11 +181,11 @@ class Upload : AppCompatActivity() {
             val userDocRef = firestore.collection("users").document(userid)
 
             val imagesCollectionRef = userDocRef.collection("images")
-            val queriesref= FirebaseFirestore.getInstance().collection("queries")
+            val queriesRef = firestore.collection("queries")
 
             // Create a new document in the images subcollection with a unique ID
             val newImageDocRef = imagesCollectionRef.document()
-            val querydoc = queriesref.document()
+            val queryDocRef = queriesRef.document()
 
             val des = desc.text.toString()
 
@@ -182,11 +193,8 @@ class Upload : AppCompatActivity() {
                 val latitude = coordinates.first
                 val longitude = coordinates.second
 
-                // Converting byte array to a list of integers
-                val uriList = imageBytes.map { it.toInt() }
-
                 val imageMap = mutableMapOf<String, Any>()
-                imageMap["URI"] = uriList
+                imageMap["URI"] = imageBytes.map { it.toInt() }
                 imageMap["Latitude"] = latitude
                 imageMap["Longitude"] = longitude
                 imageMap["Description"] = des
@@ -194,38 +202,34 @@ class Upload : AppCompatActivity() {
 
                 val queryMap = mutableMapOf<String, Any>()
                 queryMap["userid"] = userid
-                queryMap["URI"] = uriList
+                queryMap["URI"] = imageBytes.map { it.toInt() }
                 queryMap["Latitude"] = latitude
                 queryMap["Longitude"] = longitude
                 queryMap["Description"] = des
                 queryMap["Status"] = "Pending"
-
-
 
                 newImageDocRef.set(imageMap)
                     .addOnSuccessListener {
                         viewImage.setImageBitmap(null)
                         desc.setText("")
                         Toast.makeText(this, "Image uploaded successfully.", Toast.LENGTH_SHORT).show()
-                        Log.d("Success", "Image uploaded for user $userid")
+                        Log.d("Success", "Image metadata uploaded for user $userid")
                     }
                     .addOnFailureListener { e ->
-                        Log.d("Failure", "Failure in image uploading $e")
+                        Toast.makeText(this, "Failed to upload image : ${e.message}", Toast.LENGTH_SHORT).show()
+                        Log.e("Failure", "Failed to upload image metadata: ${e.message}")
                     }
 
-                querydoc.set(queryMap)
+                queryDocRef.set(queryMap)
                     .addOnSuccessListener {
-                        Toast.makeText(this, "Status updated successfully.", Toast.LENGTH_SHORT).show()
-                        Log.d("Queries", "Image uploaded to queries .")
+                        Log.d("Queries", "Image metadata updated in queries collection.")
                     }
-                    .addOnFailureListener {
-                        Log.d("Error Query", "Error in uploading image for approval.")
+                    .addOnFailureListener { e ->
+                        Log.e("Error Query", "Failed to update status: ${e.message}")
                     }
             }
+        } else {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
         }
     }
-
-
-
-
 }
