@@ -10,20 +10,20 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
 
-class QueryAdapter(private val queryList: List<Data>) :
-    RecyclerView.Adapter<QueryAdapter.QueryViewHolder>() {
+class QueryAdapter(
+    private val queryList: List<Data>,
+    private val approveClickListener: OnApproveClickListener
+) : RecyclerView.Adapter<QueryAdapter.QueryViewHolder>() {
 
     interface OnApproveClickListener {
         fun onApproveClick(query: Data)
     }
 
-    private val databaseReference: DatabaseReference = FirebaseDatabase.getInstance().getReference("queries")
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): QueryViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_query, parent, false)
@@ -33,57 +33,26 @@ class QueryAdapter(private val queryList: List<Data>) :
     override fun onBindViewHolder(holder: QueryViewHolder, position: Int) {
         val query = queryList[position]
         holder.bind(query)
-        val firestore = FirebaseFirestore.getInstance()
-        val userDocRef = firestore.collection("users").document(query.userid)
-        val imagesCollectionRef = userDocRef.collection("images")
 
-        Glide.with(holder.itemView.context).load(query.url).into(holder.imageView)
+        Glide.with(holder.itemView.context).load(query.uri).into(holder.imageView)
 
         holder.buttonApprove.setOnClickListener {
-            // Handle approval
-            imagesCollectionRef
-                .get()
-                .addOnSuccessListener { snapshots ->
-                    for (document in snapshots.documents) {
-                        // Update the "Status" field for each document in the collection
-                        imagesCollectionRef.document(document.id).update("Status", "Approved")
-                            .addOnSuccessListener {
-                                Log.d("Admin_Activity", "Status updated successfully")
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("Admin_Activity", "Error updating status", e)
-                            }
-                    }
-                }
-                .addOnFailureListener { e ->
-                    Log.e("Admin_Activity", "Error fetching images collection", e)
-                }
-
-
-            addRewardPoints(query.userid)
-            Log.d("Approved", "Image Approved ")
-
+            approveClickListener.onApproveClick(query)
+            // You can add additional logic here if needed, but approval is handled by the listener
         }
 
         holder.buttonDecline.setOnClickListener {
+            // Handle decline
+            val queryDocRef = firestore.collection("queries").document(query.documentId)
 
-            databaseReference.child(query.userid).child("Status").setValue("declined")
-            imagesCollectionRef
-                .get()
-                .addOnSuccessListener { snapshots ->
-                    for (document in snapshots.documents) {
-                        // Update the "Status" field for each document in the collection
-                        imagesCollectionRef.document(document.id).update("Status", "Declined")
-                            .addOnSuccessListener {
-                                Log.d("Admin_Activity", "Status updated successfully")
-                            }
-                            .addOnFailureListener { e ->
-                                Log.e("Admin_Activity", "Error updating status", e)
-                            }
-                    }
+            queryDocRef.delete()
+                .addOnSuccessListener {
+                    Log.d("QueryAdapter", "Document successfully deleted!")
+                    Toast.makeText(holder.itemView.context, "Query declined and deleted", Toast.LENGTH_SHORT).show()
                 }
                 .addOnFailureListener { e ->
-                    Log.e("Admin_Activity", "Error fetching images collection", e)
+                    Log.w("QueryAdapter", "Error deleting document", e)
+                    Toast.makeText(holder.itemView.context, "Failed to decline query", Toast.LENGTH_SHORT).show()
                 }
         }
     }
@@ -100,31 +69,19 @@ class QueryAdapter(private val queryList: List<Data>) :
 
         fun bind(query: Data) {
             textViewUserId.text = query.userid
-
         }
     }
 
-    fun addRewardPoints(userId:String) {
-        // Get a reference to the Firestore database
-        val pointsToAdd :Long= 5
-        val firestore = FirebaseFirestore.getInstance()
+    fun addRewardPoints(userId: String) {
+        val pointsToAdd: Long = 5
+        val userDocRef: DocumentReference = FirebaseFirestore.getInstance().collection("users").document(userId)
 
-        // Reference to the user's document
-        val userDocRef: DocumentReference? = userId?.let { firestore.collection("users").document(it) }
-
-        // Update the 'rewardPoints' field by incrementing it by the specified points
-        if (userDocRef != null) {
-            userDocRef.update("Reward_Points", FieldValue.increment(pointsToAdd))
-                .addOnSuccessListener {
-                    // Handle success
-                    Log.d("AddRewardPoints", "Reward points successfully updated!")
-                }
-                .addOnFailureListener { e ->
-                    // Handle failure
-                    Log.w("AddRewardPoints", "Error updating reward points", e)
-                }
-        }
+        userDocRef.update("Reward_Points", FieldValue.increment(pointsToAdd))
+            .addOnSuccessListener {
+                Log.d("AddRewardPoints", "Reward points successfully updated!")
+            }
+            .addOnFailureListener { e ->
+                Log.w("AddRewardPoints", "Error updating reward points", e)
+            }
     }
 }
-
-
