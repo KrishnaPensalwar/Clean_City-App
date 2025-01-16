@@ -30,7 +30,8 @@ class ImagesAdapter(private val imagesList: List<ImageData>) : RecyclerView.Adap
         fun bind(imageData: ImageData) {
             Glide.with(itemView.context).load(imageData.uri).into(imageView)
             descriptionTextView.text = imageData.description
-            locationTextView.text = "Lat: ${imageData.latitude}, Lon: ${imageData.longitude}"
+            locationTextView.text = "Lat: ${imageData.latitude}, Lon: ${imageData.longitude} \nStatus: ${imageData.status} \n" +
+                    "Description: ${imageData.description}"
         }
     }
 
