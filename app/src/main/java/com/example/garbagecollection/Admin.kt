@@ -1,5 +1,6 @@
 package com.example.garbagecollection
 
+import QueryAdapter
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -22,7 +23,7 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
         recycler = findViewById(R.id.recyclerView)
         recycler.layoutManager = LinearLayoutManager(this)
         queryList = mutableListOf()
-        queryAdapter = QueryAdapter(queryList, this) // Pass 'this' for click listener
+        queryAdapter = QueryAdapter(queryList, this, this) // Pass both listeners
         recycler.adapter = queryAdapter
 
         firestore = FirebaseFirestore.getInstance()
@@ -34,17 +35,31 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
         val imagesCollectionRef = firestore.collection("queries")
 
         imagesCollectionRef
-            .whereEqualTo("Status", "Pending")  // Fetch only "Pending" queries
+            .whereEqualTo("Status", "Pending") // Fetch only "Pending" queries
             .get()
             .addOnSuccessListener { documents ->
                 queryList.clear() // Clear the existing list to avoid duplicates
                 for (document in documents) {
-                    val uriList = document.get("URI") as List<Int>
+                    // Extract all fields with proper null checks
+                    val description = document.getString("Description") ?: "No description"
+                    val latitude = document.getDouble("Latitude") ?: 0.0
+                    val longitude = document.getDouble("Longitude") ?: 0.0
+                    val status = document.getString("Status") ?: "Pending"
+                    val uriList = document.get("URI") as? List<Int> ?: emptyList()
                     val uriBytes = uriList.map { it.toByte() }.toByteArray()
                     val uri = "data:image/jpeg;base64," + android.util.Base64.encodeToString(uriBytes, android.util.Base64.DEFAULT)
                     val userId = document.getString("userid") ?: ""
-                    val status = document.getString("Status") ?: "Pending"  // Default to "Pending" if no status
-                    val query = Data(uri, userId, status, document.id) // Include document ID
+
+                    // Create a query object with all fields
+                    val query = Data(
+                        uri = uri,
+                        userId = userId,
+                        status = status,
+                        documentId = document.id,
+                        description = description,
+                        latitude = latitude,
+                        longitude = longitude
+                    )
                     queryList.add(query)
                 }
                 queryAdapter.notifyDataSetChanged()
@@ -64,7 +79,7 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
                 Log.d("Admin_Activity", "Document status successfully updated to 'Approved'!")
 
                 // Update reward points for the user
-                addRewardPoints(query.userid)
+                addRewardPoints(query.userId)
 
                 // Update the status in the query list locally
                 val updatedQuery = query.copy(status = "Approved")
@@ -73,7 +88,7 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
                 queryAdapter.notifyItemChanged(index) // Notify that specific item was changed
 
                 // Now update the image status in the user's 'images' collection
-                updateImageStatusInUserCollection(query.userid, query.documentId)
+                updateImageStatusInUserCollection(query.userId, query.documentId)
 
                 Toast.makeText(this, "Item approved", Toast.LENGTH_SHORT).show()
             }
@@ -84,33 +99,40 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
     }
 
     private fun updateImageStatusInUserCollection(userId: String, queryDocId: String) {
-        // Access the user's images collection in Firestore
-        val userImagesRef = firestore.collection("users").document(userId).collection("images")
+        val userImagesRef = firestore.collection("users")
+            .document(userId)
+            .collection("images")
 
-        // Find the image in the user's images collection by matching the queryDocId
-        userImagesRef.whereEqualTo("queryDocId", queryDocId) // Assuming you have a field to match with the query doc ID
+        // Log the queryDocId and userId for debugging
+        Log.d("Debug", "Searching for queryDocId: $queryDocId in userId: $userId")
+
+        userImagesRef.whereEqualTo("queryDocId", queryDocId)
             .get()
             .addOnSuccessListener { documents ->
                 if (!documents.isEmpty) {
                     for (document in documents) {
-                        // Update the status of the image in the user's images collection
-                        userImagesRef.document(document.id).update("Status", "Approved")
+                        Log.d("Debug", "Updating image document: ${document.id}")
+                        userImagesRef.document(document.id)
+                            .update("Status", "Approved")
                             .addOnSuccessListener {
-                                Log.d("Admin_Activity", "User's image status successfully updated to 'Approved'!")
+                                Log.d("Admin_Activity", "Image status successfully updated to 'Approved'!")
                             }
                             .addOnFailureListener { e ->
-                                Log.e("Admin_Activity", "Error updating user's image status", e)
+                                Log.e("Admin_Activity", "Error updating image status", e)
                             }
                     }
                 } else {
-                    Log.e("Admin_Activity", "No image found for the given queryDocId in user's collection")
+                    // Log error if no matching document is found
+                    Log.e(
+                        "Admin_Activity",
+                        "No image found for queryDocId: $queryDocId in userId: $userId"
+                    )
                 }
             }
             .addOnFailureListener { e ->
-                Log.e("Admin_Activity", "Error fetching images from user's collection", e)
+                Log.e("Admin_Activity", "Error fetching user's images collection", e)
             }
     }
-
 
     private fun addRewardPoints(userId: String) {
         // Assume the user data is in the "users" collection
@@ -130,6 +152,7 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
                         .addOnFailureListener { e ->
                             Log.e("Admin_Activity", "Error updating reward points", e)
                         }
+
                 } else {
                     Log.e("Admin_Activity", "User document does not exist")
                 }
@@ -139,7 +162,43 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
             }
     }
 
-    // Optionally, you can add this function to handle declined items
+    private fun updateImageStatusInUserCollectionDecline(userId: String, queryDocId: String) {
+        val userImagesRef = firestore.collection("users")
+            .document(userId)
+            .collection("images")
+
+        // Log the queryDocId and userId for debugging
+        Log.d("Debug", "Searching for queryDocId: $queryDocId in userId: $userId")
+
+        userImagesRef.whereEqualTo("queryDocId", queryDocId)
+            .get()
+            .addOnSuccessListener { documents ->
+                if (!documents.isEmpty) {
+                    for (document in documents) {
+                        Log.d("Debug", "Updating image document: ${document.id}")
+                        userImagesRef.document(document.id)
+                            .update("Status", "Declined")
+                            .addOnSuccessListener {
+                                Log.d("Admin_Activity", "Image status successfully updated to 'Approved'!")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("Admin_Activity", "Error updating image status", e)
+                            }
+                    }
+                } else {
+                    // Log error if no matching document is found
+                    Log.e(
+                        "Admin_Activity",
+                        "No image found for queryDocId: $queryDocId in userId: $userId"
+                    )
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Admin_Activity", "Error fetching user's images collection", e)
+            }
+    }
+
+    // Handle declined items
     fun onDeclineClick(query: Data) {
         // Change the status of the Firestore document to "Declined"
         val queryDocRef = firestore.collection("queries").document(query.documentId)
@@ -148,11 +207,14 @@ class Admin : AppCompatActivity(), QueryAdapter.OnApproveClickListener {
             .addOnSuccessListener {
                 Log.d("Admin_Activity", "Document status successfully updated to 'Declined'!")
 
-                // Update status in the query list
-                val updatedQuery = query.copy(status = "Declined")  // Update status locally
+                // Update the status in the query list locally
+                val updatedQuery = query.copy(status = "Declined") // Update status locally
                 val index = queryList.indexOf(query)
                 queryList[index] = updatedQuery
-                queryAdapter.notifyItemChanged(index)  // Notify that specific item was changed
+                queryAdapter.notifyItemChanged(index) // Notify that specific item was changed
+
+                // Now update the image status in the user's 'images' collection
+                updateImageStatusInUserCollectionDecline(query.userId, query.documentId)
 
                 Toast.makeText(this, "Item declined", Toast.LENGTH_SHORT).show()
             }

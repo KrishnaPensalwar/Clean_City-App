@@ -1,26 +1,28 @@
-package com.example.garbagecollection
-
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.google.firebase.firestore.DocumentReference
+import com.example.garbagecollection.Admin
+import com.example.garbagecollection.Data
+import com.example.garbagecollection.R
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.FieldValue
 
 class QueryAdapter(
-    private val queryList: List<Data>,
-    private val approveClickListener: OnApproveClickListener
+    private val queryList: MutableList<Data>,
+    private val approveClickListener: OnApproveClickListener,
+    private val declineClickListener: Admin
 ) : RecyclerView.Adapter<QueryAdapter.QueryViewHolder>() {
 
     interface OnApproveClickListener {
         fun onApproveClick(query: Data)
+    }
+
+    interface OnDeclineClickListener {
+        fun onDeclineClick(query: Data)
     }
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -36,24 +38,15 @@ class QueryAdapter(
 
         Glide.with(holder.itemView.context).load(query.uri).into(holder.imageView)
 
+        // Handle Approve button click
         holder.buttonApprove.setOnClickListener {
             approveClickListener.onApproveClick(query)
-            // You can add additional logic here if needed, but approval is handled by the listener
         }
 
+        // Handle Decline button click
         holder.buttonDecline.setOnClickListener {
-            // Handle decline
-            val queryDocRef = firestore.collection("queries").document(query.documentId)
-
-            queryDocRef.delete()
-                .addOnSuccessListener {
-                    Log.d("QueryAdapter", "Document successfully deleted!")
-                    Toast.makeText(holder.itemView.context, "Query declined and deleted", Toast.LENGTH_SHORT).show()
-                }
-                .addOnFailureListener { e ->
-                    Log.w("QueryAdapter", "Error deleting document", e)
-                    Toast.makeText(holder.itemView.context, "Failed to decline query", Toast.LENGTH_SHORT).show()
-                }
+            // Ask for confirmation before declining the query
+            declineClickListener.onDeclineClick(query)
         }
     }
 
@@ -68,20 +61,7 @@ class QueryAdapter(
         val buttonDecline: Button = itemView.findViewById(R.id.decline)
 
         fun bind(query: Data) {
-            textViewUserId.text = query.userid
+            textViewUserId.text = query.userId
         }
-    }
-
-    fun addRewardPoints(userId: String) {
-        val pointsToAdd: Long = 5
-        val userDocRef: DocumentReference = FirebaseFirestore.getInstance().collection("users").document(userId)
-
-        userDocRef.update("Reward_Points", FieldValue.increment(pointsToAdd))
-            .addOnSuccessListener {
-                Log.d("AddRewardPoints", "Reward points successfully updated!")
-            }
-            .addOnFailureListener { e ->
-                Log.w("AddRewardPoints", "Error updating reward points", e)
-            }
     }
 }

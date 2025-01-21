@@ -21,6 +21,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.ByteArrayOutputStream
+import java.util.UUID
 
 class Upload : AppCompatActivity() {
 
@@ -179,13 +180,12 @@ class Upload : AppCompatActivity() {
         if (userid != null) {
             val firestore = FirebaseFirestore.getInstance()
             val userDocRef = firestore.collection("users").document(userid)
-
             val imagesCollectionRef = userDocRef.collection("images")
             val queriesRef = firestore.collection("queries")
 
-            // Create a new document in the images subcollection with a unique ID
-            val newImageDocRef = imagesCollectionRef.document()
-            val queryDocRef = queriesRef.document()
+            // Create a unique queryDocId for the image
+            val queryDocId = UUID.randomUUID().toString()
+            val queryDocRef = queriesRef.document(queryDocId)
 
             val des = desc.text.toString()
 
@@ -193,39 +193,44 @@ class Upload : AppCompatActivity() {
                 val latitude = coordinates.first
                 val longitude = coordinates.second
 
-                val imageMap = mutableMapOf<String, Any>()
-                imageMap["URI"] = imageBytes.map { it.toInt() }
-                imageMap["Latitude"] = latitude
-                imageMap["Longitude"] = longitude
-                imageMap["Description"] = des
-                imageMap["Status"] = "Pending"
+                val imageMap = mapOf(
+                    "queryDocId" to queryDocId,  // Add the unique queryDocId
+                    "URI" to imageBytes.map { it.toInt() },
+                    "Latitude" to latitude,
+                    "Longitude" to longitude,
+                    "Description" to des,
+                    "Status" to "Pending"
+                )
 
-                val queryMap = mutableMapOf<String, Any>()
-                queryMap["userid"] = userid
-                queryMap["URI"] = imageBytes.map { it.toInt() }
-                queryMap["Latitude"] = latitude
-                queryMap["Longitude"] = longitude
-                queryMap["Description"] = des
-                queryMap["Status"] = "Pending"
+                val queryMap = mapOf(
+                    "userid" to userid,
+                    "queryDocId" to queryDocId,  // Add the unique queryDocId
+                    "URI" to imageBytes.map { it.toInt() },
+                    "Latitude" to latitude,
+                    "Longitude" to longitude,
+                    "Description" to des,
+                    "Status" to "Pending"
+                )
 
-                newImageDocRef.set(imageMap)
+                // Upload to user's images subcollection and queries collection with the same queryDocId
+                queryDocRef.set(queryMap)
+                    .addOnSuccessListener {
+                        Log.d("Queries", "Image metadata added to queries collection: $queryDocId")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Error Query", "Failed to update status: ${e.message}")
+                    }
+
+                imagesCollectionRef.document(queryDocId).set(imageMap)
                     .addOnSuccessListener {
                         viewImage.setImageBitmap(null)
                         desc.setText("")
                         Toast.makeText(this, "Image uploaded successfully.", Toast.LENGTH_SHORT).show()
-                        Log.d("Success", "Image metadata uploaded for user $userid")
+                        Log.d("Success", "Image metadata uploaded for user $userid with ID: $queryDocId")
                     }
                     .addOnFailureListener { e ->
-                        Toast.makeText(this, "Failed to upload image : ${e.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Failed to upload image: ${e.message}", Toast.LENGTH_SHORT).show()
                         Log.e("Failure", "Failed to upload image metadata: ${e.message}")
-                    }
-
-                queryDocRef.set(queryMap)
-                    .addOnSuccessListener {
-                        Log.d("Queries", "Image metadata updated in queries collection.")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("Error Query", "Failed to update status: ${e.message}")
                     }
             }
         } else {

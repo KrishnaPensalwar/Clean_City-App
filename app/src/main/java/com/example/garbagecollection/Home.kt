@@ -159,15 +159,15 @@ private lateinit var reward:TextView
                     val latitude = location.latitude
                     val longitude = location.longitude
 
-//                    Toast.makeText(this,"Latitude: $latitude, Longitude: $longitude", Toast.LENGTH_SHORT).show()
-
-                    mapView.controller.setCenter(myLocationOverlay.myLocation)
-                    val puneLocation = GeoPoint(latitude, longitude)
+                    mapView.controller.setZoom(18.5) // Set the zoom level
+                    val currLocation = GeoPoint(latitude, longitude)
                     val marker = Marker(mapView)
-                    marker.position = puneLocation
+                    marker.position = currLocation
                     marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     mapView.overlays.add(marker)
 
+                    // Center and animate the map to the marker's location
+                    mapView.controller.animateTo(currLocation)
                 } else {
                     Toast.makeText(this, "Failed to get location", Toast.LENGTH_SHORT).show()
                 }
@@ -175,8 +175,6 @@ private lateinit var reward:TextView
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-
     }
-
 
 }
